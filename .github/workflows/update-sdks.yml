@@ -3,7 +3,7 @@ name: Update SDK Dependencies
 on:
   push:
     branches:
-      - master # Trigger on pushes to the main branch of your-package
+      - master
 
 jobs:
   update_dependencies:
@@ -15,14 +15,19 @@ jobs:
       - name: Fetch Latest Package Version
         id: fetch_version
         run: |
-          LATEST_VERSION=$(npm show @0x69123/my-package version) 
+          LATEST_VERSION=$(npm show @0x69123/my-package version)
           echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
 
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: "16"
-          cache: "yarn"
+          node-version: '16' 
+          cache: 'yarn'
+
+      - name: Configure Git User
+        run: |
+          git config --global user.email "your-email@example.com"
+          git config --global user.name "Your Name"
 
       - name: Update SDK Repositories and Create Pull Requests
         env:
@@ -32,7 +37,7 @@ jobs:
             git clone https://github.com/$SDK_REPO.git sdk_temp
             cd sdk_temp
             yarn add @0x69123/my-package@${{ steps.fetch_version.outputs.LATEST_VERSION }}
-            yarn install
+            yarn install       
             git checkout -b update-my-package-${{ steps.fetch_version.outputs.LATEST_VERSION }} # Update branch name
             git add package*.json yarn.lock
             git commit -m "Update @0x69123/my-package to ${{ steps.fetch_version.outputs.LATEST_VERSION }}"
