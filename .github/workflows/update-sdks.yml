@@ -1,0 +1,49 @@
+name: Update SDK Dependencies
+
+on:
+  push:
+    branches:
+      - master # Trigger on pushes to the main branch of your-package
+
+jobs:
+  update_dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Fetch Latest Package Version
+        id: fetch_version
+        run: |
+          LATEST_VERSION=$(npm show @0x69123/my-package version) 
+          echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          cache: "yarn"
+
+      - name: Update SDK Repositories and Create Pull Requests
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          for SDK_REPO in "Ok69123/test-hello-world-2"; do  
+            git clone https://github.com/$SDK_REPO.git sdk_temp
+            cd sdk_temp
+            yarn add @0x69123/my-package@${{ steps.fetch_version.outputs.LATEST_VERSION }}
+            yarn install
+            git checkout -b update-my-package-${{ steps.fetch_version.outputs.LATEST_VERSION }} # Update branch name
+            git add package*.json yarn.lock
+            git commit -m "Update @0x69123/my-package to ${{ steps.fetch_version.outputs.LATEST_VERSION }}"
+            git push origin update-my-package-${{ steps.fetch_version.outputs.LATEST_VERSION }}
+
+            # Create Pull Request
+            gh pr create --base main \
+                        --head update-my-package-${{ steps.fetch_version.outputs.LATEST_VERSION }} \
+                        --title "Update @0x69123/my-package to ${{ steps.fetch_version.outputs.LATEST_VERSION }}" \
+                        --body "Automated update of @0x69123/my-package dependency to ${{ steps.fetch_version.outputs.LATEST_VERSION }}" 
+            
+            cd ..
+            rm -rf sdk_temp
+          done
