@@ -14,15 +14,13 @@ jobs:
 
       - name: Fetch Latest Package Version
         id: fetch_version
-        run: |
-          LATEST_VERSION=$(npm show @0x69123/my-package version)
-          echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+        run: echo "LATEST_VERSION=$(npm show @0x69123/my-package version)" >> $GITHUB_OUTPUT
 
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '16' 
-          cache: 'yarn'
+          node-version: "16"
+          cache: "yarn"
 
       - name: Configure Git User
         run: |
@@ -32,23 +30,24 @@ jobs:
       - name: Update SDK Repositories and Create Pull Requests
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          LATEST_VERSION: ${{ steps.fetch_version.outputs.LATEST_VERSION }}
         run: |
           for SDK_REPO in "Ok69123/test-hello-world-2"; do  
             REMOTE_REPO="https://x-access-token:${GITHUB_TOKEN}@github.com/${SDK_REPO}.git" 
             git clone "$REMOTE_REPO" sdk_temp
             cd sdk_temp
-            yarn add @0x69123/my-package@${{ steps.fetch_version.outputs.LATEST_VERSION }}
+            yarn add @0x69123/my-package@${{ env.LATEST_VERSION }} # Use env variable
             yarn install       
-            git checkout -b update-my-package-${{ steps.fetch_version.outputs.LATEST_VERSION }} 
+            git checkout -b update-my-package-${{ env.LATEST_VERSION }} 
             git add package*.json yarn.lock
-            git commit -m "Update @0x69123/my-package to ${{ steps.fetch_version.outputs.LATEST_VERSION }}"
-            git push origin update-my-package-${{ steps.fetch_version.outputs.LATEST_VERSION }}
+            git commit -m "Update @0x69123/my-package to ${{ env.LATEST_VERSION }}"
+            git push origin update-my-package-${{ env.LATEST_VERSION }} 
 
             # Create Pull Request
             gh pr create --base main \
-                        --head update-my-package-${{ steps.fetch_version.outputs.LATEST_VERSION }} \
-                        --title "Update @0x69123/my-package to ${{ steps.fetch_version.outputs.LATEST_VERSION }}" \
-                        --body "Automated update of @0x69123/my-package dependency to ${{ steps.fetch_version.outputs.LATEST_VERSION }}" 
+                        --head update-my-package-${{ env.LATEST_VERSION }} \
+                        --title "Update @0x69123/my-package to ${{ env.LATEST_VERSION }}" \
+                        --body "Automated update of @0x69123/my-package dependency to ${{ env.LATEST_VERSION }}" 
             
             cd ..
             rm -rf sdk_temp
