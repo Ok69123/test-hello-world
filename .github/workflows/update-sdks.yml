@@ -37,15 +37,12 @@ jobs:
             REMOTE_REPO="https://x-access-token:${GITHUB_TOKEN}@github.com/${SDK_REPO}.git" 
             git clone "$REMOTE_REPO" sdk_temp
             cd sdk_temp
-
             yarn add @0x69123/my-package@${{ steps.fetch_version.outputs.LATEST_VERSION }}
             yarn install       
-            git fetch origin main
-            git rebase origin/main
             git checkout -b update-my-package-${{ steps.fetch_version.outputs.LATEST_VERSION }} 
             git add package*.json yarn.lock
             git commit -m "Update @0x69123/my-package to ${{ steps.fetch_version.outputs.LATEST_VERSION }}"
-            git push origin update-my-package-${{ steps.fetch_version.outputs.LATEST_VERSION }} # Force push if needed
+            git push origin update-my-package-${{ steps.fetch_version.outputs.LATEST_VERSION }}
 
             # Create Pull Request
             gh pr create --base main \
