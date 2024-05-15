@@ -34,7 +34,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
           for SDK_REPO in "Ok69123/test-hello-world-2"; do  
-            git clone https://github.com/$SDK_REPO.git sdk_temp
+            REMOTE_REPO="https://x-access-token:${GITHUB_TOKEN}@github.com/${SDK_REPO}.git" 
+            git clone "$REMOTE_REPO" sdk_temp
             cd sdk_temp
             yarn add @0x69123/my-package@${{ steps.fetch_version.outputs.LATEST_VERSION }}
             yarn install       
