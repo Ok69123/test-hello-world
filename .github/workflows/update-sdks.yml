@@ -39,7 +39,7 @@ jobs:
             cd sdk_temp
             yarn add @0x69123/my-package@${{ steps.fetch_version.outputs.LATEST_VERSION }}
             yarn install       
-            git checkout -b update-my-package-${{ steps.fetch_version.outputs.LATEST_VERSION }} # Update branch name
+            git checkout -b update-my-package-${{ steps.fetch_version.outputs.LATEST_VERSION }} 
             git add package*.json yarn.lock
             git commit -m "Update @0x69123/my-package to ${{ steps.fetch_version.outputs.LATEST_VERSION }}"
             git push origin update-my-package-${{ steps.fetch_version.outputs.LATEST_VERSION }}
